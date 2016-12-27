@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello Phaser!</title>
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <script type="text/javascript" src="/socketcluster.js"></script>
+    <script src="/phaser.min.js"></script>
+    <script src="/rbush.min.js"></script>
+    <script src="/SAT.min.js"></script>
+    <script src="/channel-grid.js"></script>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        color: #666666;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+
+      var socket = socketCluster.connect();
+
+      window.onload = function () {
+
+        //  Note that this html file is set to pull down Phaser from our public/ directory.
+        //  Although it will work fine with this tutorial, it's almost certainly not the most current version.
+        //  Be sure to replace it with an updated version before you start experimenting with adding your own code.
+
+        var game, playerId, player;
+        users = {};
+        coins = {};
+        // For collision detection
+        var coinTree = rbush();
+        var channelGrid;
+
+        var WORLD_WIDTH;
+        var WORLD_HEIGHT;
+        var WORLD_COLS;
+        var WORLD_ROWS;
+        var WORLD_CELL_WIDTH;
+        var WORLD_CELL_HEIGHT;
+        var PLAYER_LINE_OF_SIGHT = (window.innerWidth / 2) * 1.5;
+        var USER_INACTIVITY_TIMEOUT = 500;
+        var COIN_INACTIVITY_TIMEOUT = 3000;
+        var ENVIRONMENT;
+        var SERVER_WORKER_ID;
+
+        // 1 means no smoothing. 0.1 is relatively smooth.
+        var CAMERA_SMOOTHING = 1;
+        var BACKGROUND_TEXTURE = 'img/background-texture.png';
+
+        socket.emit('getWorldInfo', null, function (err, data) {
+          WORLD_WIDTH = data.width;
+          WORLD_HEIGHT = data.height;
+          WORLD_COLS = data.cols;
+          WORLD_ROWS = data.rows;
+          WORLD_CELL_WIDTH = data.cellWidth;
+          WORLD_CELL_HEIGHT = data.cellHeight;
+          SERVER_WORKER_ID = data.serverWorkerId;
+          ENVIRONMENT = data.environment;
+
+          channelGrid = new ChannelGrid({
+            worldWidth: WORLD_WIDTH,
+            worldHeight: WORLD_HEIGHT,
+            rows: WORLD_ROWS,
+            cols: WORLD_COLS,
+            exchange: socket
+          });
+
+          game = new Phaser.Game('100', '100', Phaser.AUTO, '', {
+            preload: preload,
+            create: create,
+            render: render,
+            update: update
+          });
+        });
+
+        function getRandomColor(min) {
+          var max = 255;
+          var randomness = max - min;
+          return min + Math.round(Math.random() * randomness);
+        }
+
+        function preload() {
+          keys = {
+            up: game.input.keyboard.addKey(Phaser.Keyboard.UP),
+            down: game.input.keyboard.addKey(Phaser.Keyboard.DOWN),
+            right: game.input.keyboard.addKey(Phaser.Keyboard.RIGHT),
+            left: game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
+          };
+
+          game.load.image('background', BACKGROUND_TEXTURE);
+        }
+
+        function generateHitArea(user, safetyFactor) {
+          var userRadius = Math.round(user.width / 2) * (safetyFactor || 1);
+          return {
+            user: user,
+            minX: user.x - userRadius,
+            minY: user.y - userRadius,
+            maxX: user.x + userRadius,
+            maxY: user.y + userRadius
+          };
+        }
+
+        function getVectorLength(v) {
+          return Math.sqrt(v.x * v.x + v.y * v.y);
+        }
+
+        var playerOverlaps = [];
+
+        function preventUserOverlap() {
+          playerOverlaps = [];
+          var userTree = new rbush();
+          var hitAreaList = [];
+
+          for (var h in users) {
+            if (users.hasOwnProperty(h)) {
+              var curUser = users[h];
+              curUser.hitArea = generateHitArea(curUser, 1.2);
+              hitAreaList.push(curUser.hitArea);
+            }
+          }
+          userTree.load(hitAreaList);
+
+          userTree.remove(player.hitArea);
+          var hitList = userTree.search(player.hitArea);
+
+          hitList.forEach(function (hit) {
+            playerOverlaps.push({
+              id: hit.user.id,
+              swid: hit.user.swid,
+              x: hit.user.x,
+              y: hit.user.y,
+              width: hit.user.width,
+              height: hit.user.height
+            });
+          });
+        }
+
+        function handleUserStates(userStateList) {
+          userStateList.forEach(updateUser);
+          bringPlayerToTop();
+          preventUserOverlap();
+        }
+
+        var watchingCells = {};
+
+        /*
+          Data channels within our game are divided a grids and we only watch the cells
+          which are within our player's line of sight.
+          As the player moves around the game world, we need to keep updating the cell subscriptions.
+        */
+        function updateCellWatchers(playerData, channelName, handler) {
+          if (!watchingCells[channelName]) {
+            watchingCells[channelName] = {};
+          }
+          var watchMap = watchingCells[channelName];
+          var sightArea = {
+            minX: playerData.x - PLAYER_LINE_OF_SIGHT,
+            minY: playerData.y - PLAYER_LINE_OF_SIGHT,
+            maxX: playerData.x + PLAYER_LINE_OF_SIGHT,
+            maxY: playerData.y + PLAYER_LINE_OF_SIGHT
+          };
+          var minCol = Math.max(Math.floor(sightArea.minX / WORLD_CELL_WIDTH), 0);
+          var maxCol = Math.min(Math.floor(sightArea.maxX / WORLD_CELL_WIDTH), WORLD_COLS - 1);
+          var minRow = Math.max(Math.floor(sightArea.minY / WORLD_CELL_HEIGHT), 0);
+          var maxRow = Math.min(Math.floor(sightArea.maxY / WORLD_CELL_HEIGHT), WORLD_ROWS - 1);
+
+          var matchedCells = {};
+
+          for (var r = minRow; r <= maxRow; r++) {
+            for (var c = minCol; c <= maxCol; c++) {
+              var colRowKey = c + ',' + r;
+              matchedCells[colRowKey] = {col: c, row: r};
+              if (!watchMap[colRowKey]) {
+                watchMap[colRowKey] = {col: c, row: r};
+                channelGrid.watchCell(channelName, c, r, handler);
+              }
+            }
+          }
+
+          for (var i in watchMap) {
+            if (watchMap.hasOwnProperty(i)) {
+              if (!matchedCells[i]) {
+                var coords = watchMap[i];
+                channelGrid.unwatchCell(channelName, coords.col, coords.row, handler);
+                delete watchMap[i];
+              }
+            }
+          }
+        }
+
+        function reportApproxCoinCollisionsToServer(user) {
+          // We account for double the area to account for server latency
+          var collisionHalfWidth = user.width;
+          var collisionHalfHeight = user.height;
+
+          var coinNodesHits = coinTree.search({
+            minX: user.x - collisionHalfWidth,
+            minY: user.y - collisionHalfHeight,
+            maxX: user.x + collisionHalfWidth,
+            maxY: user.y + collisionHalfHeight
+          });
+
+          var coinsHitList = [];
+
+          coinNodesHits.forEach(function (coinNode) {
+            var curCoin = coins[coinNode.id];
+            if (curCoin) {
+              coinsHitList.push({
+                id: curCoin.id,
+                swid: curCoin.swid,
+                x: curCoin.x,
+                y: curCoin.y,
+                r: curCoin.r
+              });
+            }
+          });
+          if (coinsHitList.length) {
+            socket.publish('external/coin-hit-check/' + SERVER_WORKER_ID, {
+              userId: user.id,
+              coins: coinsHitList
+            });
+          }
+        }
+
+        function removeTakenCoins(coinStates) {
+          coinStates.forEach(removeCoin);
+        }
+
+        function updateUserGraphics(user) {
+          user.sprite.x = user.x;
+          user.sprite.y = user.y;
+          user.label.alignTo(user.sprite, Phaser.BOTTOM_CENTER, 0, 10);
+        }
+
+        function bringPlayerToTop() {
+          if (player) {
+            player.label.bringToTop();
+            player.sprite.bringToTop();
+          }
+        }
+
+        function moveUser(userId, x, y) {
+          var user = users[userId];
+          user.x = x;
+          user.y = y;
+          updateUserGraphics(user);
+          user.label.bringToTop();
+          user.sprite.bringToTop();
+          user.updated = Date.now();
+
+          if (user.id == playerId) {
+            reportApproxCoinCollisionsToServer(user);
+            updateCellWatchers(user, 'player-states', handleUserStates);
+            updateCellWatchers(user, 'coin-states', renderCoins);
+            updateCellWatchers(user, 'coins-taken', removeTakenCoins);
+          }
+        }
+
+        function removeUser(userData) {
+          var user = users[userData.id];
+          if (user) {
+            user.sprite.destroy();
+            user.label.destroy();
+            delete users[userData.id];
+          }
+        }
+
+        function createCircleSprite(options) {
+          var graphics = new Phaser.Graphics(game);
+
+          graphics.beginFill(options.color);
+          graphics.drawCircle(0, 0, options.diameter);
+          graphics.endFill();
+          var texture = graphics.generateTexture();
+
+          var sprite = game.add.sprite(0, 0, texture);
+          sprite.anchor.setTo(0.5);
+
+          return sprite;
+        }
+
+        function createUserSprite(userData) {
+          var user = {};
+          users[userData.id] = user;
+          user.id = userData.id;
+          user.swid = userData.swid;
+          user.name = userData.name;
+
+          var textStyle = {
+            font: '16px Arial',
+            fill: '#000000',
+            align: 'center'
+          };
+
+          user.label = game.add.text(0, 0, user.name, textStyle);
+          user.label.anchor.set(0.5);
+
+          var circle = createCircleSprite({
+            diameter: userData.width,
+            color: userData.color
+          });
+
+          user.color = userData.color;
+          user.score = userData.score;
+          user.sprite = circle;
+
+          user.width = user.sprite.width;
+          user.height = user.sprite.height;
+
+          moveUser(userData.id, userData.x, userData.y);
+
+          if (userData.id == playerId) {
+            player = user;
+            game.camera.setSize(window.innerWidth, window.innerHeight);
+            game.camera.follow(user.sprite, null, CAMERA_SMOOTHING, CAMERA_SMOOTHING);
+          }
+        }
+
+        function updateUser(userData) {
+          var user = users[userData.id];
+          if (user) {
+            user.score = userData.score;
+            moveUser(userData.id, userData.x, userData.y);
+          } else {
+            createUserSprite(userData);
+          }
+        }
+
+        function removeCoin(coinData) {
+          var coinToRemove = coins[coinData.id];
+          if (coinToRemove) {
+            coinTree.remove(coinToRemove.hitArea);
+            coinToRemove.sprite.destroy();
+            delete coins[coinToRemove.id];
+          }
+        }
+
+        function renderCoins(coinStateList) {
+          coinStateList.forEach(function (coinData) {
+            if (coins[coinData.id]) {
+              coins[coinData.id].updated = Date.now();
+            } else {
+              var coin = coinData;
+              coins[coinData.id] = coin;
+              coin.sprite = createCircleSprite({
+                diameter: coinData.r * 2,
+                color: Phaser.Color.hexToRGB('#FFBB00')
+              });
+              coin.sprite.x = coinData.x;
+              coin.sprite.y = coinData.y;
+              coin.hitArea = {
+                minX: coinData.x - coinData.r,
+                minY: coinData.y - coinData.r,
+                maxX: coinData.x + coinData.r,
+                maxY: coinData.y + coinData.r,
+                id: coinData.id
+              };
+              coin.updated = Date.now();
+
+              coinTree.insert(coin.hitArea);
+            }
+          });
+        }
+
+        function create() {
+          background = game.add.tileSprite(0, 0, WORLD_WIDTH, WORLD_HEIGHT, 'background');
+          game.time.advancedTiming = true;
+          game.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+          // Generate a random name for the user.
+          var playerName = 'user-' + Math.round(Math.random() * 10000);
+          var playerColor = Phaser.Color.getColor(getRandomColor(100), getRandomColor(100), getRandomColor(100));
+
+          function joinWorld() {
+            socket.emit('join', {
+              name: playerName,
+              color: playerColor
+            }, function (err, playerData) {
+              playerId = playerData.id;
+              updateCellWatchers(playerData, 'player-states', handleUserStates);
+              updateCellWatchers(playerData, 'coin-states', renderCoins);
+            });
+          }
+
+          function removeAllUserSprites() {
+            for (var i in users) {
+              if (users.hasOwnProperty(i)) {
+                removeUser(users[i]);
+              }
+            }
+          }
+
+          if (socket.state == 'open') {
+            joinWorld();
+          }
+          // For reconnect
+          socket.on('connect', joinWorld);
+          socket.on('disconnect', removeAllUserSprites);
+        }
+
+        function update() {
+          var didAction = false;
+          var playerOp = {};
+          if (keys.up.isDown) {
+            playerOp.u = 1;
+            didAction = true;
+          }
+          if (keys.down.isDown) {
+            playerOp.d = 1;
+            didAction = true;
+          }
+          if (keys.right.isDown) {
+            playerOp.r = 1;
+            didAction = true;
+          }
+          if (keys.left.isDown) {
+            playerOp.l = 1;
+            didAction = true;
+          }
+          if (playerOverlaps.length) {
+            playerOp.ols = playerOverlaps;
+          }
+          if (didAction) {
+            // Send the player operations for the server to process.
+            socket.emit('action', playerOp);
+          }
+        }
+
+        function render() {
+          var now = Date.now();
+
+          if (ENVIRONMENT == 'dev') {
+            game.debug.text('FPS:   ' + game.time.fps, 2, 14, "#00FF00");
+            if (player) {
+              game.debug.text('Score: ' + player.score, 2, 30, "#00FF00");
+            }
+          }
+
+          for (var i in users) {
+            if (users.hasOwnProperty(i)) {
+              var curUser = users[i];
+              if (now - curUser.updated > USER_INACTIVITY_TIMEOUT) {
+                removeUser(curUser);
+              }
+            }
+          }
+
+          for (var j in coins) {
+            if (coins.hasOwnProperty(j)) {
+              var curCoin = coins[j];
+              if (now - curCoin.updated > COIN_INACTIVITY_TIMEOUT) {
+                removeCoin(curCoin);
+              }
+            }
+          }
+        }
+      };
+    </script>
+  </body>
+</html>
