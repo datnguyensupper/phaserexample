@@ -1,0 +1,7 @@
+IgnoreFile/
+/PhoneGapVersion/lobby/plugins/*
+/PhoneGapVersion/lobby/platforms/*
+/PhoneGapVersion/lobby/.idea/*
+/PhoneGapVersion/lobby-ionic/.idea/*
+/.idea/*
+/PhoneGapVersion/BK/*
