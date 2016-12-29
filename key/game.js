@@ -35,14 +35,14 @@ var gameOptions = {
      jumpForce: -210,
      
      // jump tween length, in milliseconds
-     jumpTime: 500
+     jumpTime: 800
 }
 
 // when the window loads
 window.onload = function() {
 
      // game creation	
-	game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight);
+	game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.CANVAS);
      
      // adding game state
      game.state.add("TheGame", TheGame);
