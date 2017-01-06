@@ -6,7 +6,8 @@ var gameOptions = {
     width: 400,
     height: 490,
     numberTilesOfPipe:8,
-    pipeSize:60
+    pipeSize:60,
+    backgroundColor:'#71c5cf'
 };
 
 window.onload = function(){
@@ -24,8 +25,9 @@ var mainState = {
     },
 
     create:function() {
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         this.jumpSound = game.add.audio('jump');
-        game.stage.backgroundColor = '#71c5cf';
+        game.stage.backgroundColor = gameOptions.backgroundColor;
         game.physics.startSystem(Phaser.Physics.ARCADE);
         this.bird = game.add.sprite(100, 245, 'bird');
         this.bird.anchor.setTo(-0.2, 0.5);
