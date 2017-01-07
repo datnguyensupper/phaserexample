@@ -1,20 +1,18 @@
 // the game itself
 var game;
-var extraheight = 30;
+
 // global object with all game options
 var gameOptions = {
      // game width
-     gameWidth: 1600,
+     gameWidth: 640,
      // game height
-	gameHeight: 900,
+	gameHeight: 480,
      // width of each floor
-     floorWidth: 1600,
+     floorWidth: 640,
      // height of each floor
      floorHeight: 20,
-     //height of each level
-     levelHeight: 150,
      // array with vertical floors potision
-     floorY: [100,220+extraheight,340+extraheight*2,460+extraheight*3,580+extraheight*4,700+extraheight*5],
+     floorY: [92,184,276,368],//460],
      // horizontal floor position
      floorX: 0,
      // size of the hero
@@ -26,9 +24,7 @@ var gameOptions = {
      // force to be applied at each jump
      jumpForce: -210,
      // jump tween length, in milliseconds
-     jumpTime: 300,
-     //colors used in the game
-     levelColors: [0xe81d62, 0x9b26af, 0x2095f2, 0x4bae4f, 0xfeea3a, 0x795548, 0x5f7c8a]
+     jumpTime: 800
 }
 
 /**
@@ -49,11 +45,9 @@ var gameLevels = [
      // floor 2
     [{width:10,height:35,x:150},{width:10,height:35,x:300},{width:10,height:35,x:550}],
      // floor 3
-    [{width:80,height:10,x:280},{width:80,height:10,x:480}],
+    [{width:80,height:10,x:280}],
     //floor 4
-    [{width:10,height:10,x:100},{width:10,height:10,x:200},{width:10,height:10,x:300},{width:10,height:10,x:400},{width:10,height:10,x:500},{width:10,height:10,x:600}],
-    //floor 5
-    [{width:10,height:40,x:350}]
+    []
 ];
 
 
@@ -62,7 +56,7 @@ var gameLevels = [
 window.onload = function() {
 
      // game creation
-	game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight);
+	game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.CANVAS);
      // adding game state
      game.state.add("TheGame", TheGame);
      // starting game state
@@ -87,9 +81,6 @@ TheGame.prototype = {
 
      // once the state is ready
      create: function(){
-
-          //background group
-          this.bgGroup = game.add.group();
 
           // creation of a group where we will place all floors
           this.groundGroup = game.add.group();
@@ -122,33 +113,12 @@ TheGame.prototype = {
           // gravity applied to the square
           this.theSquare.body.gravity.y = gameOptions.squareGravity;
 
-          // a custom attribute to tell the player which color we are going to use at each floor
-          this.theSquare.squareColor = [];
-
           // time to create the floors
           for(i = 0; i < gameOptions.floorY.length; i++){
 
-               // colorsArray will contain a copy of levelColors array
-               var colorsArray = gameOptions.levelColors.slice();
-
-               //background
-               var bg = game.add.tileSprite(gameOptions.floorX, gameOptions.floorY[i] - gameOptions.levelHeight, gameOptions.floorWidth, gameOptions.levelHeight, "tile");
-
-               // which color are we going to tint the square when crossing this floor?
-               this.theSquare.squareColor[i] = Phaser.ArrayUtils.removeRandomItem(colorsArray);
-
-              //setting background semi-transparent to make it look darker thanks to black canvas color
-              bg.alpha = 0.5;
-
-              // adding the background to its proper group
-              this.bgGroup.add(bg);
-
-               //apply a random tint color to background
-               bg.tint = Phaser.ArrayUtils.removeRandomItem(colorsArray);
-
                // each floor is a tile sprite
                var floor = game.add.tileSprite(gameOptions.floorX, gameOptions.floorY[i], gameOptions.floorWidth, gameOptions.floorHeight, "tile");
-
+floor.tint = "0x00ff00";
                // let's enable ARCADE physics on floors too
                game.physics.enable(floor, Phaser.Physics.ARCADE);
 
@@ -185,9 +155,6 @@ TheGame.prototype = {
           this.emitter.maxParticleScale = 0.1;
           this.emitter.minParticleScale = 0.05;
 
-         //finally placing the hero
-         this.placeSquare();
-
           // waiting for player input, then call squareJump function
           game.input.onDown.add(this.squareJump, this);
      },
@@ -206,13 +173,6 @@ TheGame.prototype = {
 
                // firing 10 particles at once with a 1000 milliseconds lifespan
                this.emitter.start(true, 1000,null,10);
-
-              var that = this;
-              // tinting particles with the same player color
-              this.emitter.forEach(function(particle) {
-                  particle.tint = this.theSquare.tint;
-              }, this);
-
                // placing the player at the beginning of the floor
                this.placeSquare();
 
@@ -238,10 +198,6 @@ TheGame.prototype = {
 
      // when the player starts running on a floor
      placeSquare: function(){
-
-         //properly tint the square accourding to floor number
-         this.theSquare.tint = this.theSquare.squareColor[this.levelFloor];
-
           // adjusting hero speed according to floor number: from left to right on even floors, from right to left on odd floors
           this.theSquare.body.velocity.x = (this.levelFloor % 2 == 0) ? gameOptions.squareSpeed : -gameOptions.squareSpeed;
 
