@@ -1,31 +1,24 @@
 // the game itself
 var game;
-var extraheight = 40;
+var extraheight = 30;
 // global object with all game options
 var gameOptions = {
      // game width
      gameWidth: 1600,
      // game height
-    gameHeight: 900,
+	gameHeight: 900,
      // width of each floor
      floorWidth: 1600,
      // height of each floor
-     floorHeight: 40,
+     floorHeight: 20,
      //height of each level
-     levelHeight: 200,
+     levelHeight: 150,
      // array with vertical floors potision
-     floorY: [
-         225-extraheight,
-         450-extraheight,
-         675-extraheight,
-         900-extraheight,
-         //580+extraheight*4,
-         //700+extraheight*5
-          ],
+     floorY: [100,220+extraheight,340+extraheight*2,460+extraheight*3,580+extraheight*4,700+extraheight*5],
      // horizontal floor position
      floorX: 0,
      // size of the hero
-     squareSize: 30,
+     squareSize: 16,
      // horizontal speed of the hero
      squareSpeed: 170,
      // game gravity
