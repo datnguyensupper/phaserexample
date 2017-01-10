@@ -1,41 +1,9 @@
 /**
  * Created by tuynu on 1/3/2017.
  */
-"use strict";
-function _classCallCheck(e, t) {
-    if (!(e instanceof t))
-        throw new TypeError("Cannot call a class as a function")
-}
-function _inherits(e, t) {
-    if ("function" != typeof t && null !== t)
-        throw new TypeError("Super expression must either be null or a function, not " + typeof t);
-    e.prototype = Object.create(t && t.prototype, {
-        constructor: {
-            value: e,
-            enumerable: !1,
-            writable: !0,
-            configurable: !0
-        }
-    }),
-    t && (Object.setPrototypeOf ? Object.setPrototypeOf(e, t) : e.__proto__ = t)
-}
-var _createClass = function() {
-    function e(e, t) {
-        for (var o = 0; o < t.length; o++) {
-            var a = t[o];
-            a.enumerable = a.enumerable || !1,
-                a.configurable = !0,
-            "value"in a && (a.writable = !0),
-                Object.defineProperty(e, a.key, a)
-        }
-    }
-    return function(t, o, a) {
-        return o && e(t.prototype, o),
-        a && e(t, a),
-            t
-    }
-}()
-    , _get = function(e, t, o) {
+'use strict';
+
+var _get = function(e, t, o) {
     for (var a = !0; a; ) {
         var r = e
             , n = t

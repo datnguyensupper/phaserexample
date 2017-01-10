@@ -11,6 +11,7 @@ var gameOptions = {
      floorWidth: 640,
      // height of each floor
      floorHeight: 20,
+     // height ò
      // array with vertical floors potision
      floorY: [92,184,276,368],//460],
      // horizontal floor position
