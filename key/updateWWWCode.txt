@@ -6,7 +6,7 @@ Remove-Item www\index.html
 xcopy /s/y/i ..\..\assets www\assets
 xcopy /s/y/i ..\..\js www\js
 xcopy /y ..\..\index.html www\index.html
-xcopy /y ..\..\..\phaser.js www\phaser.js
+xcopy /y ..\..\..\LIB\phaser.js www\phaser.js
 
 
 //update project code at jumping_box
@@ -15,7 +15,7 @@ Remove-Item www\js -recurse
 Remove-Item www\index.html
 xcopy /s/y/i ..\..\js www\js
 xcopy /y ..\..\index.html www\index.html
-xcopy /y ..\..\..\phaser.js www\phaser.js
+xcopy /y ..\..\..\LIB\phaser.js www\phaser.js
 
 
 // remove anoying file
