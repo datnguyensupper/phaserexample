@@ -9,30 +9,30 @@ var gameOptions = {
      // game height
     gameHeight: 900*scaleRatio,
      // width of each floor
-     floorWidth: 1600,
+     floorWidth: 1600*scaleRatio,
      // height of each floor
-     floorHeight: 40,
+     floorHeight: 40*scaleRatio,
      //height of each level
-     levelHeight: 200,
+     levelHeight: 200*scaleRatio,
      // array with vertical floors potision
      floorY: [
-         225-extraheight,
-         450-extraheight,
-         675-extraheight,
-         900-extraheight,
+         225*scaleRatio-extraheight*scaleRatio,
+         450*scaleRatio-extraheight*scaleRatio,
+         675*scaleRatio-extraheight*scaleRatio,
+         900*scaleRatio-extraheight*scaleRatio,
          //580+extraheight*4,
          //700+extraheight*5
           ],
      // horizontal floor position
      floorX: 0,
      // size of the hero
-     squareSize: 30,
+     squareSize: 30*scaleRatio,
      // horizontal speed of the hero
-     squareSpeed: 200,//180,
+     squareSpeed: 200*scaleRatio,//180,
      // game gravity
-     squareGravity: 450,
+     squareGravity: 450*scaleRatio,
      // force to be applied at each jump
-     jumpForce: -210,
+     jumpForce: -210*scaleRatio,
      // jump tween length, in milliseconds
      jumpTime: 500,
      //colors used in the game
@@ -43,7 +43,7 @@ var gameOptions = {
      //isTest:true,
 
     //height of leg box,
-    heightOfLegOfSquare:30,
+    heightOfLegOfSquare:30*scaleRatio,
     CONSTANT_CACHE_MAX_SCORE:"maxscorecache",
 }
 
@@ -97,6 +97,20 @@ var gameLevelsRandom = [
     [{width:10,height:40,x:350}]
 ];
 
+for(var i = 0; i < gameLevels.length; i++){
+    for(var j = 0; j < gameLevels[i].length; j++){
+        gameLevels[i][j].width *= scaleRatio;
+        gameLevels[i][j].height *= scaleRatio;
+        gameLevels[i][j].x *= scaleRatio;
+    }
+}
+for(var i = 0; i < gameLevelsRandom.length; i++){
+    for(var j = 0; j < gameLevelsRandom[i].length; j++){
+        gameLevelsRandom[i][j].width *= scaleRatio;
+        gameLevelsRandom[i][j].height *= scaleRatio;
+        gameLevelsRandom[i][j].x *= scaleRatio;
+    }
+}
 
 
 // when the window loads
@@ -126,7 +140,7 @@ TheGame.prototype = {
         this.groupNeed2Scale.push (gameOverPopup);
         var gaameOverTitle = game.add.sprite(
             0,
-            -350, "gameOverText",0,gameOverPopup);
+            -350*scaleRatio, "gameOverText",0,gameOverPopup);
         gaameOverTitle.anchor.setTo(0.5,0.5);
         var bgGameOver = game.add.sprite(
             0,
@@ -135,8 +149,8 @@ TheGame.prototype = {
         bgGameOver.scale.setTo(1.5);
 
         var playBtn = game.add.button(
-            -110,
-            300, 'playBtn', function(){
+            -110*scaleRatio,
+            300*scaleRatio, 'playBtn', function(){
             this.restartGame();
         }, this, 0, 0, 0);
         playBtn.anchor.setTo(0.5,0.5);
@@ -148,11 +162,11 @@ TheGame.prototype = {
         shareBtn.anchor.setTo(0.5,0.5);
 
         //add score text
-        var scoreText = game.add.bitmapText(bgGameOver.x+50, bgGameOver.y-70, 'carrier_command',this.score+'',40);
+        var scoreText = game.add.bitmapText(bgGameOver.x+50*scaleRatio, bgGameOver.y-70*scaleRatio, 'carrier_command',this.score+'',40*scaleRatio);
         scoreText.tint = 0x000000;
         scoreText.anchor.setTo(0,0.5);
         gameOverPopup.add(scoreText);
-        var maxScoreText = game.add.bitmapText(scoreText.x, scoreText.y + scoreText.height + 90, 'carrier_command',this.maxScore+'',40);
+        var maxScoreText = game.add.bitmapText(scoreText.x, scoreText.y + scoreText.height + 90*scaleRatio, 'carrier_command',this.maxScore+'',40*scaleRatio);
         maxScoreText.tint = 0x000000;
         maxScoreText.anchor.setTo(0,0.5);
         gameOverPopup.add(maxScoreText);
@@ -631,7 +645,7 @@ TheBootGame.prototype = {
 
 
         var progressBG = game.add.sprite(
-            800, 300, "progressLoading");
+            800*scaleRatio, 300*scaleRatio, "progressLoading");
         //progressBG.width = 300;
         //progressBG.height = 20;
 
@@ -646,7 +660,7 @@ TheBootGame.prototype = {
 
         var theSquare = game.add.sprite(
             progressBG.x,
-            progressBG.y - 40, "tile");
+            progressBG.y - 40*scaleRatio, "tile");
         theSquare.width = gameOptions.squareSize;
         theSquare.height = gameOptions.squareSize;
         theSquare.tint = 0xff6699;
@@ -690,7 +704,7 @@ TheLoadingGame.prototype = {
         );
         anm.start();
 
-        var target = theSquare.x + progressBG.width-20;
+        var target = theSquare.x + progressBG.width-20*scaleRatio;
         anm = game.add.tween(theSquare);
         anm.to(
             {x: target},

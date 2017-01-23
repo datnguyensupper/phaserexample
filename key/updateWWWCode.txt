@@ -25,3 +25,6 @@ cordova build android
 Remove-Item www\assets -recurse
 Remove-Item www\js -recurse
 Remove-Item www\index.html
+
+// update plugin
+xcopy /s/y ..\..\..\PluginAddManually\cordova-plugin-nativeaudio\android platforms\android\src\com\rjfun\cordova\plugin\nativeaudio\
