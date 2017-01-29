@@ -7,6 +7,7 @@ xcopy /s/y/i ..\..\assets www\assets
 xcopy /s/y/i ..\..\js www\js
 xcopy /s/y/i ..\..\..\LIB\CORE www\js\CORE
 xcopy /y ..\..\index.html www\index.html
+cordova run android
 cordova build android
 
 

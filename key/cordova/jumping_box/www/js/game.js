@@ -1,40 +1,40 @@
 // the game itself
 var game;
-var extraheight = 40;
-var scaleRatio = 0.5;
+var extraheight = 14;
+var scaleRatio = 1;
 // global object with all game options
 var gameOptions = {
      // game width
-     gameWidth: 1600*scaleRatio,
+     gameWidth: 800,//1600,
      // game height
-    gameHeight: 900*scaleRatio,
+     gameHeight: 450,//900,
      // width of each floor
-     floorWidth: 1600*scaleRatio,
+     floorWidth: 802,
      // height of each floor
-     floorHeight: 40*scaleRatio,
+     floorHeight: 20,
      //height of each level
-     levelHeight: 200*scaleRatio,
+     levelHeight: 100,
      // array with vertical floors potision
      floorY: [
-         225*scaleRatio-extraheight*scaleRatio,
-         450*scaleRatio-extraheight*scaleRatio,
-         675*scaleRatio-extraheight*scaleRatio,
-         900*scaleRatio-extraheight*scaleRatio,
+         112-extraheight,
+         224-extraheight,
+         336-extraheight,
+         448-extraheight,
          //580+extraheight*4,
          //700+extraheight*5
           ],
      // horizontal floor position
      floorX: 0,
      // size of the hero
-     squareSize: 30*scaleRatio,
+     squareSize: 30,
      // horizontal speed of the hero
-     squareSpeed: 200*scaleRatio,//180,
+     squareSpeed: 200,//180,
      // game gravity
-     squareGravity: 450*scaleRatio,
+     squareGravity: 450,
      // force to be applied at each jump
-     jumpForce: -210*scaleRatio,
+     jumpForce: -210,
      // jump tween length, in milliseconds
-     jumpTime: 500,
+     jumpTime: 700,
      //colors used in the game
      levelColors: [0xe81d62, 0x9b26af, 0x2095f2, 0x4bae4f, 0xfeea3a, 0x795548, 0x5f7c8a],
 
@@ -43,8 +43,9 @@ var gameOptions = {
      //isTest:true,
 
     //height of leg box,
-    heightOfLegOfSquare:30*scaleRatio,
+    heightOfLegOfSquare:30,
     CONSTANT_CACHE_MAX_SCORE:"maxscorecache",
+    CONSTANT_CACHE_PLAY_BACKGROUND_MUSIC:"isplaybackgroundmusiccache",
 }
 
 /**
@@ -58,17 +59,23 @@ var gameOptions = {
  * @type {Array}
  */
 var gameLevels = [
-     // floor 0
+
+    // floor 0
     [{width:60,height:30,x:200},{width:60,height:30,x:400},
-     {width:60,height:30,x:600},{width:60,height:30,x:800},
-     {width:60,height:30,x:1000},{width:60,height:30,x:1200}],
+        {width:60,height:30,x:600}//,{width:60,height:30,x:800},
+        //  {width:60,height:30,x:1000},{width:60,height:30,x:1200}
+    ],
     // // floor 1
-    [{width:40,height:30,x:250},{width:70,height:25,x:450},{width:30,height:20,x:100},
-        {width:40,height:30,x:700},{width:70,height:25,x:900}/*,{width:30,height:20,x:550}*/,
-        {width:40,height:30,x:1250},{width:70,height:25,x:1450},{width:30,height:20,x:1100},],
+    [{width:40,height:30,x:260},{width:70,height:25,x:450},{width:30,height:20,x:100},
+        {width:40,height:30,x:700}
+        // ,{width:70,height:25,x:900}/*,{width:30,height:20,x:550}*/,
+        // {width:40,height:30,x:1250},{width:70,height:25,x:1450},{width:30,height:20,x:1100},
+    ],
     // // floor 2
-    [{width:10,height:35,x:150},{width:10,height:35,x:300},{width:10,height:35,x:550},
-        {width:10,height:35,x:800},{width:10,height:35,x:950},{width:10,height:35,x:1200},],
+    [{width:10,height:35,x:150},{width:10,height:35,x:300},{width:10,height:35,x:550}
+        // ,
+        //     {width:10,height:35,x:800},{width:10,height:35,x:950},{width:10,height:35,x:1200},
+    ],
     // // floor 3
     [{width:80,height:10,x:280},{width:80,height:10,x:480},
         {width:80,height:10,x:960},{width:80,height:10,x:1160},
@@ -78,15 +85,20 @@ var gameLevelsRandom = [
 
     // floor 0
     [{width:60,height:30,x:200},{width:60,height:30,x:400},
-        {width:60,height:30,x:600},{width:60,height:30,x:800},
-        {width:60,height:30,x:1000},{width:60,height:30,x:1200}],
+        {width:60,height:30,x:600}//,{width:60,height:30,x:800},
+        //  {width:60,height:30,x:1000},{width:60,height:30,x:1200}
+    ],
     // // floor 1
-    [{width:40,height:30,x:250},{width:70,height:25,x:450},{width:30,height:20,x:100},
-        {width:40,height:30,x:700},{width:70,height:25,x:900},{width:30,height:20,x:550},
-        {width:40,height:30,x:1250},{width:70,height:25,x:1450},{width:30,height:20,x:1100},],
+    [{width:40,height:30,x:260},{width:70,height:25,x:450},{width:30,height:20,x:100},
+        {width:40,height:30,x:700}
+        // ,{width:70,height:25,x:900}/*,{width:30,height:20,x:550}*/,
+        // {width:40,height:30,x:1250},{width:70,height:25,x:1450},{width:30,height:20,x:1100},
+    ],
     // // floor 2
-    [{width:10,height:35,x:150},{width:10,height:35,x:300},{width:10,height:35,x:550},
-        {width:10,height:35,x:800},{width:10,height:35,x:950},{width:10,height:35,x:1200},],
+    [{width:10,height:35,x:150},{width:10,height:35,x:300},{width:10,height:35,x:550}
+        // ,
+        //     {width:10,height:35,x:800},{width:10,height:35,x:950},{width:10,height:35,x:1200},
+    ],
     // // floor 3
     [{width:80,height:10,x:280},{width:80,height:10,x:480},
         {width:80,height:10,x:960},{width:80,height:10,x:1160},
@@ -94,23 +106,9 @@ var gameLevelsRandom = [
     ////floor 4
     [{width:10,height:10,x:100},{width:10,height:10,x:200},{width:10,height:10,x:300},{width:10,height:10,x:400},{width:10,height:10,x:500},{width:10,height:10,x:600}],
     ////floor 5
-    [{width:10,height:40,x:350}]
+    [{width:10,height:40,x:200},{width:10,height:40,x:400},{width:10,height:40,x:600}]
 ];
 
-for(var i = 0; i < gameLevels.length; i++){
-    for(var j = 0; j < gameLevels[i].length; j++){
-        gameLevels[i][j].width *= scaleRatio;
-        gameLevels[i][j].height *= scaleRatio;
-        gameLevels[i][j].x *= scaleRatio;
-    }
-}
-for(var i = 0; i < gameLevelsRandom.length; i++){
-    for(var j = 0; j < gameLevelsRandom[i].length; j++){
-        gameLevelsRandom[i][j].width *= scaleRatio;
-        gameLevelsRandom[i][j].height *= scaleRatio;
-        gameLevelsRandom[i][j].x *= scaleRatio;
-    }
-}
 
 
 // when the window loads
@@ -133,40 +131,90 @@ TheGame.prototype = {
     arrayOfDebugPhysicSprites:[],
     arrayOfGroupEachFloorLevel:[],
     groupNeed2Scale:[],
+
+    // set tint color for all object relate to the square
+    setTintColorForRelateTheSquare:function(){
+        if(this.playBGMusic){
+        this.playBGMusic.tint = this.theSquare.tint;
+        }
+        if(this.stopBGMusic){
+        this.stopBGMusic.tint = this.theSquare.tint;
+        }
+
+    },
+    //play background music
+    playBackgroundMusic: function(){
+        if(!this.isPlayedBGMusic){
+            ManagerForSound.loop(game, 'background-music');
+        }
+        this.isPlayedBGMusic = true;
+        this.updateStateOfBackgroundMusic();
+        Lobby.Utils.setToLocalStorage(gameOptions.CONSTANT_CACHE_PLAY_BACKGROUND_MUSIC, true);
+    },
+
+    //stop background music
+    stopBackgroundMusic: function(){
+        ManagerForSound.stop(game,'background-music');
+        this.isPlayedBGMusic = false;
+        this.updateStateOfBackgroundMusic();
+        Lobby.Utils.setToLocalStorage(gameOptions.CONSTANT_CACHE_PLAY_BACKGROUND_MUSIC, false);
+    },
+
+    //share on facebook
+    shareResultOnFacebook:function(){
+        // var fbLoginSuccess = function (userData) {
+        //     alert("UserInfo: " + JSON.stringify(userData));
+        // }
+        //
+        // facebookConnectPlugin.login(["public_profile"],
+        //     fbLoginSuccess,
+        //     function (error) { alert("" + error) }
+        // );
+        facebookConnectPlugin.showDialog({
+            method: 'share',
+            href: 'https://raw.githubusercontent.com/tuynumemories/privacygame/master/privacyGameJumpingBox.txt',
+            link: "https://raw.githubusercontent.com/tuynumemories/privacygame/master/privacyGameJumpingBox.txt",
+            caption: "Congratulations! You beat your personal record! Your new score is " + this.maxScore
+        }, /*success*/function(){},
+            /*fail*/function(){});
+    },
     createIfNotExistPopupGameOver:function(){
 
 
         var gameOverPopup = game.add.group();
         this.groupNeed2Scale.push (gameOverPopup);
-        var gaameOverTitle = game.add.sprite(
-            0,
-            -350*scaleRatio, "gameOverText",0,gameOverPopup);
-        gaameOverTitle.anchor.setTo(0.5,0.5);
         var bgGameOver = game.add.sprite(
             0,
             0, "bgBodyGameOver",0,gameOverPopup);
         bgGameOver.anchor.setTo(0.5,0.5);
         bgGameOver.scale.setTo(1.5);
+        var gameOverTitle = game.add.sprite(
+            0,
+            -150, "gameOverText",0,gameOverPopup);
+        gameOverTitle.anchor.setTo(0.5,0.5);
 
         var playBtn = game.add.button(
-            -110*scaleRatio,
-            300*scaleRatio, 'playBtn', function(){
+            -50,
+            110, 'playBtn', function(){
             this.restartGame();
         }, this, 0, 0, 0);
         playBtn.anchor.setTo(0.5,0.5);
         playBtn.scale.setTo(0.8);
         gameOverPopup.add(playBtn);
-        var shareBtn = game.add.sprite(
+        var shareBtn = game.add.button(
             -playBtn.x,
-            playBtn.y, "shareBtn",0,gameOverPopup);
+            playBtn.y, 'shareBtn', function(){
+                this.shareResultOnFacebook();
+            }, this, 0, 0, 0);
+        gameOverPopup.add(shareBtn);
         shareBtn.anchor.setTo(0.5,0.5);
 
         //add score text
-        var scoreText = game.add.bitmapText(bgGameOver.x+50*scaleRatio, bgGameOver.y-70*scaleRatio, 'carrier_command',this.score+'',40*scaleRatio);
+        var scoreText = game.add.bitmapText(bgGameOver.x+50, bgGameOver.y-40, 'carrier_command',this.score+'',30);
         scoreText.tint = 0x000000;
         scoreText.anchor.setTo(0,0.5);
         gameOverPopup.add(scoreText);
-        var maxScoreText = game.add.bitmapText(scoreText.x, scoreText.y + scoreText.height + 90*scaleRatio, 'carrier_command',this.maxScore+'',40*scaleRatio);
+        var maxScoreText = game.add.bitmapText(scoreText.x, scoreText.y + scoreText.height + 35, 'carrier_command',this.maxScore+'',30);
         maxScoreText.tint = 0x000000;
         maxScoreText.anchor.setTo(0,0.5);
         gameOverPopup.add(maxScoreText);
@@ -214,14 +262,54 @@ TheGame.prototype = {
         this.currentScoreText.text = "Score:" + this.score;
         this.maxScoreText.text = "Max Score:" + this.maxScore;
     },
+// update btn play or mute background music
+    updateStateOfBackgroundMusic:function(){
+        if(!this.stopBGMusic ||
+        !this.playBGMusic){
+            return;
+        }
+        if(this.isPlayedBGMusic){
+            this.stopBGMusic.visible = true;
+            this.playBGMusic.visible = false;
+        }else{
+            this.stopBGMusic.visible = false;
+            this.playBGMusic.visible = true;
+
+        }
+    },
+
+    //create button control music
+    createBtnControlMusic: function(){
+        this.playBGMusic = game.add.button(
+            10,
+            10, 'play_bg_music', function(){
+                this.playBackgroundMusic();
+            }, this, 0, 0, 0);
+        this.playBGMusic.scale.setTo(0.8);
+        this.stopBGMusic = game.add.button(
+            this.playBGMusic.x,
+            this.playBGMusic.y-5, 'mute_bg_music', function(){
+                this.stopBackgroundMusic();
+            }, this, 0, 0, 0);
+        this.stopBGMusic.scale.setTo(this.playBGMusic.scale.x);
+        this.updateStateOfBackgroundMusic();
+        this.setTintColorForRelateTheSquare();
+
+    },
 
      // once the state is ready
      create: function(){
 
-         if(!this.isPlayedBGMusic){
-             ManagerForSound.loop(game, 'background-music');
+        // document.removeEventListener("pause",null);
+        document.addEventListener("pause", this.stopBackgroundMusic, false);
+
+         var shouldPlayBackgroundMusic = Lobby.Utils.getFromLocalStorage(gameOptions.CONSTANT_CACHE_PLAY_BACKGROUND_MUSIC);
+         if(Lobby.Utils.objectIsNull(shouldPlayBackgroundMusic)){
+             shouldPlayBackgroundMusic = 'true';
          }
-         this.isPlayedBGMusic = true;
+         if(shouldPlayBackgroundMusic === 'true') {
+             this.playBackgroundMusic();
+         }
 
          if(gameOptions.isTest){
              gameOptions.levelColors = [0x000000,0xff0000];
@@ -231,12 +319,14 @@ TheGame.prototype = {
          this.maxScore = 0;
          //add score text
          this.currentScoreText = game.add.text(game.width-10, 10, "Score:0", {
-             font: 30 + 'px Arial',
+             font: 20 + 'px Arial',
              fill: '#ffffff',
              align: "right"
          });
-         this.maxScoreText = game.add.text(this.currentScoreText.x, this.currentScoreText.y + this.currentScoreText.height + 10, "Max Score:0", {
-             font: 30 + 'px Arial',
+         this.maxScoreText = game.add.text(
+             this.currentScoreText.x,
+             this.currentScoreText.y + this.currentScoreText.height , "Max Score:0", {
+             font: 20 + 'px Arial',
              fill: '#ffffff',
              align: "right"
          });
@@ -274,18 +364,19 @@ TheGame.prototype = {
               gameOptions.floorY[0] - gameOptions.squareSize / 2, "tile");
          this.groupNeed2Scale.push (this.theSquare);
 
-         var leg = game.add.sprite(0, gameOptions.squareSize-2, 'moving_leg');
-         leg.tint = 0xffffff;
+         // var leg = game.add.sprite(0, gameOptions.squareSize-2, 'moving_leg');
+         // leg.tint = 0xffffff;
          //leg.scale.setTo(2);
-         leg.anchor.setTo(0.5,0);
-         var anim = leg.animations.add('walk');
-         anim.play(15, true);
-         this.theSquare.leg = leg;
-         this.theSquare.addChild(leg);
+         // leg.anchor.setTo(0.5,0);
+         // var anim = leg.animations.add('walk');
+         // anim.play(15, true);
+         // this.theSquare.leg = leg;
+         // this.theSquare.addChild(leg);
 
          this.arrayOfDebugPhysicSprites.push(this.theSquare);
          this.theSquare.tint = 0xff00ff;
-         this.theSquare.leg.tint = this.theSquare.tint;
+         this.setTintColorForRelateTheSquare();
+         // this.theSquare.leg.tint = this.theSquare.tint;
           // setting hero registration point
           this.theSquare.anchor.set(0.5);
           // setting hero width and height
@@ -304,7 +395,7 @@ TheGame.prototype = {
           // gravity applied to the square
           this.theSquare.body.gravity.y = gameOptions.squareGravity;
 
-         this.theSquare.body.setSize(gameOptions.squareSize*2, gameOptions.squareSize*2+gameOptions.heightOfLegOfSquare);
+         // this.theSquare.body.setSize(gameOptions.squareSize*2, gameOptions.squareSize*2+gameOptions.heightOfLegOfSquare);
 
           // a custom attribute to tell the player which color we are going to use at each floor
           this.theSquare.squareColor = [];
@@ -378,6 +469,7 @@ TheGame.prototype = {
           game.input.onDown.add(this.squareJump, this);
 
 
+          this.createBtnControlMusic();
          this.scaleEntireOfGame();
      },
 
@@ -466,7 +558,7 @@ TheGame.prototype = {
 
          //properly tint the square accourding to floor number
          this.theSquare.tint = this.theSquare.squareColor[this.levelFloor];
-         this.theSquare.leg.tint = this.theSquare.tint;
+         // this.theSquare.leg.tint = this.theSquare.tint;
 
           // adjusting hero speed according to floor number: from left to right on even floors, from right to left on odd floors
           this.theSquare.body.velocity.x = (this.levelFloor % 2 == 0) ? gameOptions.squareSpeed : -gameOptions.squareSpeed;
@@ -478,7 +570,7 @@ TheGame.prototype = {
           this.theSquare.canjump = true;
 
           // adjusting hero vertical and horizontal position
-          this.theSquare.y = gameOptions.floorY[this.levelFloor] - gameOptions.squareSize / 2 - gameOptions.heightOfLegOfSquare/2;
+          this.theSquare.y = gameOptions.floorY[this.levelFloor] - gameOptions.squareSize / 2;// - gameOptions.heightOfLegOfSquare/2;
           this.theSquare.x = (this.levelFloor % 2 == 0) ? gameOptions.floorX : gameOptions.floorX + gameOptions.floorWidth;
 
           // stopping the jump tween if running
@@ -621,6 +713,11 @@ TheBootGame.prototype = {
          */
         game.scale.pageAlignVertically = true;
         game.scale.pageAlignHorizontally = true;
+
+        // the game will keep running even when it loses the focus
+        game.stage.disableVisibilityChange = true;
+
+
         game.scale.setShowAll();
         game.scale.refresh();
 
@@ -630,9 +727,10 @@ TheBootGame.prototype = {
         game.load.image("loading-BG", "assets/sprites/background.jpg");
         game.load.image("tile", "assets/sprites/pattern4_small_1_large.png");
         game.load.image("progressLoading", "assets/sprites/maingame/progress.jpg");
+        game.load.image("progressLoading_blank", "assets/sprites/maingame/progress_blank.jpg");
 
         //load leg animation
-        game.load.atlas('moving_leg', 'assets/sprites/movingLeg.png', 'assets/sprites/movingLeg.json', Phaser.Loader.TEXTURE_ATLAS_JSON_ARRAY);
+        // game.load.atlas('moving_leg', 'assets/sprites/movingLeg.png', 'assets/sprites/movingLeg.json', Phaser.Loader.TEXTURE_ATLAS_JSON_ARRAY);
         ManagerForSound.loadSound(game, 'background-music', 'assets/sounds/CoolMusic.mp3');
 
     },
@@ -645,14 +743,14 @@ TheBootGame.prototype = {
 
 
         var progressBG = game.add.sprite(
-            800*scaleRatio, 300*scaleRatio, "progressLoading");
+            400, 150, "progressLoading");
         //progressBG.width = 300;
         //progressBG.height = 20;
 
 
         var progress = game.add.sprite(
             progressBG.x,
-            progressBG.y , "progressLoading");
+            progressBG.y , "progressLoading_blank");
         //progress.width = 0;
         //progress.height = progressBG.height;
         progress.tint = 0xff6699;
@@ -660,19 +758,19 @@ TheBootGame.prototype = {
 
         var theSquare = game.add.sprite(
             progressBG.x,
-            progressBG.y - 40*scaleRatio, "tile");
+            progressBG.y - 40, "tile");
         theSquare.width = gameOptions.squareSize;
         theSquare.height = gameOptions.squareSize;
         theSquare.tint = 0xff6699;
 
-        var leg = game.add.sprite(gameOptions.squareSize, gameOptions.squareSize*2, 'moving_leg');
-        leg.tint = 0xff6699;
+        // var leg = game.add.sprite(gameOptions.squareSize, gameOptions.squareSize*2, 'moving_leg');
+        // leg.tint = 0xff6699;
         //leg.scale.setTo(2);
-        leg.anchor.setTo(0.5,0);
-        var anim = leg.animations.add('walk');
-        anim.play(15, true);
-        theSquare.leg = leg;
-        theSquare.addChild(leg);
+        // leg.anchor.setTo(0.5,0);
+        // var anim = leg.animations.add('walk');
+        // anim.play(15, true);
+        // theSquare.leg = leg;
+        // theSquare.addChild(leg);
 
 
         game.time.events.add(100, function(){
@@ -704,7 +802,7 @@ TheLoadingGame.prototype = {
         );
         anm.start();
 
-        var target = theSquare.x + progressBG.width-20*scaleRatio;
+        var target = theSquare.x + progressBG.width-20;
         anm = game.add.tween(theSquare);
         anm.to(
             {x: target},
@@ -734,6 +832,8 @@ TheLoadingGame.prototype = {
         //game
         game.load.image("bgMainGame", "assets/sprites/maingame/background.jpg");
         game.load.image("floorMainGame", "assets/sprites/maingame/floor.jpg");
+        game.load.image("play_bg_music", "assets/sprites/maingame/play_bg.png");
+        game.load.image("mute_bg_music", "assets/sprites/maingame/mute_bg.png");
 
         game.load.bitmapFont('carrier_command', 'assets/fonts/bitmapFonts/carrier_command.png', 'assets/fonts/bitmapFonts/carrier_command.xml');
 
@@ -751,6 +851,5 @@ TheLoadingGame.prototype = {
 
         }, this);
     }
-
 
 };
