@@ -4,16 +4,12 @@
     <description>
         A sample Apache Cordova application that responds to the deviceready event.
     </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
-    </author>
+    <author email="dat.nguyen.supper@gmail.com" href="http://cordova.io">donick</author>
     <content src="index.html" />
-    <preference name="orientation" value="landscape"/>
-
-    <plugin name="cordova-plugin-crosswalk-webview"/>
+    <preference name="orientation" value="landscape" />
+    <plugin name="cordova-plugin-crosswalk-webview" />
     <plugin name="cordova-plugin-whitelist" spec="1" />
-    <plugin name="cordova-plugin-statusbar"/>
-
+    <plugin name="cordova-plugin-statusbar" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -29,4 +25,9 @@
         <allow-intent href="itms-apps:*" />
     </platform>
     <engine name="android" spec="~6.0.0" />
+    <plugin name="cordova-plugin-nativeaudio" spec="https://github.com/didlich/cordova-plugin-nativeaudio#xml-invalid-chars" />
+    <plugin name="cordova-plugin-facebook4" spec="~1.7.4">
+        <variable name="APP_ID" value="254723221616616" />
+        <variable name="APP_NAME" value="JumpingBox" />
+    </plugin>
 </widget>

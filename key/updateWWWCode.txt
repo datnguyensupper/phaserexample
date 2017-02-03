@@ -5,8 +5,10 @@ Remove-Item www\js -recurse
 Remove-Item www\index.html
 xcopy /s/y/i ..\..\assets www\assets
 xcopy /s/y/i ..\..\js www\js
+xcopy /s/y/i ..\..\..\LIB\CORE www\js\CORE
 xcopy /y ..\..\index.html www\index.html
-xcopy /y ..\..\..\LIB\phaser.js www\phaser.js
+cordova run android
+cordova build android
 
 
 //update project code at jumping_box
@@ -14,10 +16,16 @@ xcopy /y ..\..\..\LIB\phaser.js www\phaser.js
 Remove-Item www\js -recurse
 Remove-Item www\index.html
 xcopy /s/y/i ..\..\js www\js
+xcopy /s/y/i ..\..\..\LIB\CORE www\js\CORE
 xcopy /y ..\..\index.html www\index.html
-xcopy /y ..\..\..\LIB\phaser.js www\phaser.js
+cordova build android
 
 
 // remove anoying file
 
-Remove-Item www\phaser.js
+Remove-Item www\assets -recurse
+Remove-Item www\js -recurse
+Remove-Item www\index.html
+
+// update plugin
+xcopy /s/y ..\..\..\PluginAddManually\cordova-plugin-nativeaudio\android platforms\android\src\com\rjfun\cordova\plugin\nativeaudio\

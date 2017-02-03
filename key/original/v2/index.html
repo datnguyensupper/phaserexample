@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!--<meta name="viewport"-->
+		<!--content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height"/>-->
+		<meta name="viewport" content="user-scalable=no" />
+		<!--<meta name="viewport" content="initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />-->
+
+		<!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
+		<meta http-equiv="Content-Security-Policy" content=" style-src 'self' 'unsafe-inline'; media-src *" />
+	<style type="text/css">
+		html{
+			width: 100%;
+			height: 100%;
+		}
+		body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+		}
+
+		/*center canvas*/
+		#lobbygame {
+			margin: auto;
+			z-index: 100;
+			display: block;
+			position: absolute;
+			pointer-events:all;
+			width: 100%;
+			height:100%;
+			/*background-color: #333333;*/
+		}
+	</style>
+
+	<script type="text/javascript" src="cordova.js"></script>
+	<script src="../LIB/CORE/phaser.min.js"></script>
+	<script src="js/CORE/phaser.min.js"></script>
+	<script src="../LIB/CORE/core.js"></script>
+	<script src="js/CORE/core.js"></script>
+	<script src="../LIB/CORE/ManagerForSound.js"></script>
+	<script src="js/CORE/ManagerForSound.js"></script>
+	<script src="../LIB/CORE/jquery-1.11.3.min.js"></script>
+	<script src="js/CORE/jquery-1.11.3.min.js"></script>
+	<script src = "js/game.js"></script>
+
+
+	<script type="text/javascript">
+		// Wait for device API libraries to load
+		$(document).ready(function() {
+			if (Lobby.Utils.isWeb()) ondeviceReady();
+			else document.addEventListener("deviceready", ondeviceReady, false);
+
+		});
+
+		function ondeviceReady(){
+			if (!Lobby.Utils.isWeb()) {
+				StatusBar.hide();
+			}
+		}
+	</script>
+
+	</head>
+	<body>
+	<div id="lobbygame" style="visibility: visible"></div>
+	</body>
+</html>
