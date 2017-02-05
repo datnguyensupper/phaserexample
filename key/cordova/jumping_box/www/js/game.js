@@ -34,7 +34,7 @@ var gameOptions = {
      // force to be applied at each jump
      jumpForce: -210,
      // jump tween length, in milliseconds
-     jumpTime: 700,
+     jumpTime: 100,
      //colors used in the game
      levelColors: [0xe81d62, 0x9b26af, 0x2095f2, 0x4bae4f, 0xfeea3a, 0x795548, 0x5f7c8a],
 
@@ -66,13 +66,13 @@ var gameLevels = [
         //  {width:60,height:30,x:1000},{width:60,height:30,x:1200}
     ],
     // // floor 1
-    [{width:40,height:30,x:260},{width:70,height:25,x:450},{width:30,height:20,x:100},
+    [{width:70,height:25,x:350},{width:30,height:20,x:100},
         {width:40,height:30,x:700}
         // ,{width:70,height:25,x:900}/*,{width:30,height:20,x:550}*/,
         // {width:40,height:30,x:1250},{width:70,height:25,x:1450},{width:30,height:20,x:1100},
     ],
     // // floor 2
-    [{width:10,height:35,x:150},{width:10,height:35,x:300},{width:10,height:35,x:550}
+    [{width:10,height:35,x:150},{width:10,height:35,x:400},{width:10,height:35,x:650}
         // ,
         //     {width:10,height:35,x:800},{width:10,height:35,x:950},{width:10,height:35,x:1200},
     ],
@@ -89,13 +89,13 @@ var gameLevelsRandom = [
         //  {width:60,height:30,x:1000},{width:60,height:30,x:1200}
     ],
     // // floor 1
-    [{width:40,height:30,x:260},{width:70,height:25,x:450},{width:30,height:20,x:100},
+    [{width:70,height:25,x:350},{width:30,height:20,x:100},
         {width:40,height:30,x:700}
         // ,{width:70,height:25,x:900}/*,{width:30,height:20,x:550}*/,
         // {width:40,height:30,x:1250},{width:70,height:25,x:1450},{width:30,height:20,x:1100},
     ],
     // // floor 2
-    [{width:10,height:35,x:150},{width:10,height:35,x:300},{width:10,height:35,x:550}
+    [{width:10,height:35,x:150},{width:10,height:35,x:400},{width:10,height:35,x:650}
         // ,
         //     {width:10,height:35,x:800},{width:10,height:35,x:950},{width:10,height:35,x:1200},
     ],
@@ -540,6 +540,10 @@ TheGame.prototype = {
 
              // if the hero as its feet on the ground, it can jump
              if(this.theSquare.body.touching.down && !this.isDead){
+                 if(!this.theSquare.canJump){
+                     // console.log("not rotate man!");
+                     // using a tween to rotate the player
+                 }
                  this.theSquare.canJump = true;
              }
 
@@ -574,9 +578,9 @@ TheGame.prototype = {
           this.theSquare.x = (this.levelFloor % 2 == 0) ? gameOptions.floorX : gameOptions.floorX + gameOptions.floorWidth;
 
           // stopping the jump tween if running
+         this.theSquare.angle = 0;
           if(this.jumpTween && this.jumpTween.isRunning){
                this.jumpTween.stop();
-               this.theSquare.angle = 0;
           }
 
      },
@@ -657,14 +661,20 @@ TheGame.prototype = {
                   this.theSquare.body.velocity.y = gameOptions.jumpForce;
 
                   // setting a jump rotation angle just to make the square rotate
-                  var jumpAngle = this.levelFloor % 2 == 0 ? 360 : -360;
+                  var jumpAngle = this.levelFloor % 2 == 0 ? -20 : 20;
 
 
 
                   // using a tween to rotate the player
                   this.jumpTween = game.add.tween(this.theSquare).to({
                       angle: this.theSquare.angle + jumpAngle
-                  }, gameOptions.jumpTime, Phaser.Easing.Linear.None, true);
+                  }, gameOptions.jumpTime*2, Phaser.Easing.Linear.None, true);
+                this.jumpTween.onComplete.add(function(){
+                    this.jumpTween = game.add.tween(this.theSquare).to({
+                        angle: 0
+                    }, gameOptions.jumpTime*3, Phaser.Easing.Linear.None, true);
+                },this);
+
 
                   //this.theSquare.body.setSize(gameOptions.squareSize*2, gameOptions.squareSize*2+gameOptions.heightOfLegOfSquare*2);
                   //game.add.tween(this.theSquare).to({y:gameOptions.floorY[this.levelFloor] - gameOptions.squareSize / 2 -gameOptions.heightOfLegOfSquare},200,Phaser.Easing.Linear.None, true);
@@ -792,8 +802,15 @@ TheBootGame.prototype = {
 var TheLoadingGame = function(){};
 
 TheLoadingGame.prototype = {
+    _progress:null,
+    _progressBG:null,
+    _theSquare:null,
     init:function(progress,progressBG,theSquare){
         var loadingTime = 2000;
+
+        this._progress = progress;
+        this._progressBG = progressBG;
+        this._theSquare = theSquare;
 
         var anm = game.add.tween(progress);
         anm.to(
@@ -805,11 +822,16 @@ TheLoadingGame.prototype = {
         var target = theSquare.x + progressBG.width-20;
         anm = game.add.tween(theSquare);
         anm.to(
-            {x: target},
+            {x: target, angle: -20},
             loadingTime, Phaser.Easing.Linear.None
         );
         anm.start();
-
+        //
+        // anm.onComplete.add(function(){
+        //     // progress.Destroy();
+        //     // progressBG.Destroy();
+        //     theSquare.Destroy();
+        // },this);
 
     },
     // when the state preloads
@@ -834,6 +856,7 @@ TheLoadingGame.prototype = {
         game.load.image("floorMainGame", "assets/sprites/maingame/floor.jpg");
         game.load.image("play_bg_music", "assets/sprites/maingame/play_bg.png");
         game.load.image("mute_bg_music", "assets/sprites/maingame/mute_bg.png");
+        game.load.image("hand_touch", "assets/sprites/hand-touch.png");
 
         game.load.bitmapFont('carrier_command', 'assets/fonts/bitmapFonts/carrier_command.png', 'assets/fonts/bitmapFonts/carrier_command.xml');
 
@@ -841,13 +864,45 @@ TheLoadingGame.prototype = {
 
     // once the state is ready
     create: function() {
-        //ManagerForSound.loop(game, 'background-music');
+        // ManagerForSound.loop(game, 'background-music');
+        var tutorialText = game.add.bitmapText(120, 50, 'carrier_command','Touch to jump',20);
+        tutorialText.tint = 0xffffff;
+        tutorialText.anchor.setTo(0,0.5);
+
+
+        var handTutorial = game.add.sprite(
+            tutorialText.x + tutorialText.width + 50,
+            tutorialText.y, "hand_touch");
+        handTutorial.scale.setTo(0.7);
+
+        var theSquareTutorial = game.add.sprite(
+            handTutorial.x-10,
+            handTutorial.y - 30, "tile");
+        theSquareTutorial.width = gameOptions.squareSize;
+        theSquareTutorial.height = gameOptions.squareSize;
+        theSquareTutorial.angle = -10;
+
+
+
         game.time.events.add(1000, function(){
-            game.state.start(
-                "TheGame",
-                true, // clearWorld
-                false // clearCache
-            );
+
+            var playBtn = game.add.button(
+                game.width/2,
+                game.height/2, 'playBtn', function(){
+                }, this, 0, 0, 0);
+            playBtn.anchor.setTo(0.5,0.5);
+
+            game.input.onDown.add(function(){
+                game.state.start(
+                    "TheGame",
+                    true, // clearWorld
+                    false // clearCache
+                );
+            }, this);
+
+            this._progress.destroy();
+            this._progressBG.destroy();
+            this._theSquare.destroy();
 
         }, this);
     }

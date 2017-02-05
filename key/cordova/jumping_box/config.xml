@@ -30,4 +30,8 @@
         <variable name="APP_ID" value="254723221616616" />
         <variable name="APP_NAME" value="JumpingBox" />
     </plugin>
+    <preference name="Fullscreen" value="true" />
+    <preference name="splashscreen" value="splash" />
+    <preference name="splashScreenDelay" value="5000" />
+    <plugin name="cordova-plugin-splashscreen" spec="~4.0.1" />
 </widget>
