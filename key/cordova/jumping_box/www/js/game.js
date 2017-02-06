@@ -282,13 +282,13 @@ TheGame.prototype = {
     createBtnControlMusic: function(){
         this.playBGMusic = game.add.button(
             10,
-            10, 'play_bg_music', function(){
+            10, 'mute_bg_music', function(){
                 this.playBackgroundMusic();
             }, this, 0, 0, 0);
         this.playBGMusic.scale.setTo(0.8);
         this.stopBGMusic = game.add.button(
             this.playBGMusic.x,
-            this.playBGMusic.y-5, 'mute_bg_music', function(){
+            this.playBGMusic.y+5, 'play_bg_music', function(){
                 this.stopBackgroundMusic();
             }, this, 0, 0, 0);
         this.stopBGMusic.scale.setTo(this.playBGMusic.scale.x);
@@ -473,6 +473,13 @@ TheGame.prototype = {
          this.scaleEntireOfGame();
      },
 
+    playSound:function(soundID){
+         if(!this.isPlayedBGMusic){
+             return;
+         }
+        ManagerForSound.play(game,soundID);
+    },
+
     /**
      * do code for dead player
      */
@@ -482,7 +489,7 @@ TheGame.prototype = {
             return;
         }
 
-        ManagerForSound.play(game,"explosion");
+        this.playSound("explosion");
         // placing the emitter over the player
         this.emitter.x = this.theSquare.x;
         this.emitter.y = this.theSquare.y;
@@ -648,7 +655,7 @@ TheGame.prototype = {
           // if the hero can jump...
           if(this.theSquare.canJump){
 
-              ManagerForSound.play(game, 'jump');
+              this.playSound( 'jump');
 
                // preventing it to jump while in the air
                this.theSquare.canJump = false;
