@@ -29,3 +29,15 @@ Remove-Item www\index.html
 
 // update plugin
 xcopy /s/y ..\..\..\PluginAddManually\cordova-plugin-nativeaudio\android platforms\android\src\com\rjfun\cordova\plugin\nativeaudio\
+
+// build release
+cordova build android --release
+DEL  platforms/android/build/outputs/apk/android-armv7-release-real-version.apk
+DEL  platforms/android/build/outputs/apk/android-x86-release-real-version.apk
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore platforms/android/build/outputs/apk/my-release-key.keystore platforms/android/build/outputs/apk/android-armv7-release-unsigned.apk donick -storepass D@tnguyen1910
+zipalign -f -v 4 platforms/android/build/outputs/apk/android-armv7-release-unsigned.apk platforms/android/build/outputs/apk/release/android-armv7-release-real-version.apk
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore platforms/android/build/outputs/apk/my-release-key.keystore platforms/android/build/outputs/apk/android-x86-release-unsigned.apk donick -storepass D@tnguyen1910
+zipalign -f -v 4 platforms/android/build/outputs/apk/android-x86-release-unsigned.apk platforms/android/build/outputs/apk/release/android-x86-release-real-version.apk
+DEL  platforms/android/build/outputs/apk/android-x86-release-unsigned.apk
+DEL  platforms/android/build/outputs/apk/android-armv7-release-unsigned.apk
+
