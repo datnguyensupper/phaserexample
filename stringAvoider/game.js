@@ -26,7 +26,7 @@ var mainState = {
         game.load.image("maze", "assets/maze.png");
 
         // preloading start and end icons as spritesheet
-        game.load.spritesheet("startend", "assets/startend.png", 80, 80);
+        game.load.spritesheet("icons", "assets/icons.png", 80, 80);
     },
 
     create:function() {
@@ -43,16 +43,22 @@ var mainState = {
         game.add.sprite(0,0,this.bitmap);
 
         // adding start icon
-        this.startSpot = game.add.sprite(80, 80, "startend", 0);
+        this.startSpot = game.add.sprite(80, 80, "icons", 0);
 
         // setting start icon registration point to its centre
         this.startSpot.anchor.set(0.5);
 
         // adding end icon
-        this.endSpot = game.add.sprite(game.width - 80,game.height - 80, "startend", 1);
+        this.endSpot = game.add.sprite(game.width - 80,game.height - 80, "icons", 1);
 
         // setting start icon registration point to its centre
         this.endSpot.anchor.set(0.5);
+
+        // adding scissors icon
+        this.scissors = game.add.sprite(140, 800, "icons", 2);
+
+        // setting scissors icon registration point to its centre
+        this.scissors.anchor.set(0.5);
 
         // just a flag to inform us if we already had an input, that is if the player already clicked/touched the canvas
         this.firstInput = true;
@@ -134,16 +140,17 @@ var mainState = {
     // moveString method updates and renders the string
     moveString: function(x,y){
 
-        // it's
+        // it's not game over yet
+        var gameOver = false;
 
         // clearing the canvas, ready to be redrawn
         this.canvas.clear();
 
         // setting line style to a 4 pixel thick line, red, 100% opaque
-        this.canvas.lineStyle(4, 0x00ff00, 1);
+        this.canvas.lineStyle(8, 0x00ff00, 1);
 
         // the head of the string is current input position
-        var head= new Phaser.Point(game.input.x, game.input.y);
+        var head= new Phaser.Point(this.segments[0].x + x, this.segments[0].y + y);
 
         // placing the pen on the head
         this.canvas.moveTo(head.x, head.y);
@@ -151,8 +158,17 @@ var mainState = {
         // the first segment is the head itself
         this.segments[0] = new Phaser.Point(head.x, head.y);
 
+        // checking if we collected scissors powerup while it's still visible
+        if(this.segments[0].distance(this.scissors.position) < this.scissors.width/4 && this.scissors.visible){
+            // setting scissors powerup as not visible
+            this.scissors.visible = false;
+
+            // remove the second half of the string
+            this.segments.splice(this.segments.length/2-1, this.segments.length/2);
+        }
+
         // looping through all segments starting from the second one
-        for(var i = 1; i < gameOptions.tailSegments-1; i++){
+        for(var i = 1; i < this.segments.length-1; i++){
             // determining the angle between current segment and previous segment
             var nodeAngle = Math.atan2(this.segments[i].y-this.segments[i-1].y, this.segments[i].x-this.segments[i-1].x);
 
@@ -166,10 +182,28 @@ var mainState = {
             if(color.a != 0){
                 // from now on ,draw the string in red
                 this.canvas.lineStyle(4, 0xff0000,1);
+
+                // game over...
+                gameOver = true;
             }
 
             // drawing the segment
             this.canvas.lineTo(this.segments[i].x, this.segments[i].y);
+
+            // repositioning graphic pen to avoid graphic glitch
+            this.canvas.moveTo(this.segments[i].x, this.segments[i].y);
+        }
+
+        // if it's game over or the head of the string is fairly inside the end spot...
+        if(this.segments[0].distance(this.endSpot.position) < this.endSpot.width/4 || gameOver){
+            // removing listeners
+            game.input.onUp.remove(this.endMove, this);
+            game.input.deleteMoveCallback(this.dragString, this);
+
+            // wait 2 seconds before restarting the game.
+            game.time.events.add(Phaser.Timer.SECOND*2, function(){
+                game.state.start("main");
+            }, this);
         }
 
     },

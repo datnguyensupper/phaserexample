@@ -172,8 +172,8 @@ TheGame.prototype = {
         // );
         facebookConnectPlugin.showDialog({
             method: 'share',
-            href: 'https://raw.githubusercontent.com/tuynumemories/privacygame/master/privacyGameJumpingBox.txt',
-            link: "https://raw.githubusercontent.com/tuynumemories/privacygame/master/privacyGameJumpingBox.txt",
+            href: 'https://play.google.com/store/apps/details?id=com.donick.jumpingbox',
+            link: "https://play.google.com/store/apps/details?id=com.donick.jumpingbox",
             caption: "Congratulations! You beat your personal record! Your new score is " + this.maxScore
         }, /*success*/function(){},
             /*fail*/function(){});
