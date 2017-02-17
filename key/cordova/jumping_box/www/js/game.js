@@ -181,6 +181,7 @@ TheGame.prototype = {
     createIfNotExistPopupGameOver:function(){
 
 
+
         var gameOverPopup = game.add.group();
         this.groupNeed2Scale.push (gameOverPopup);
         var bgGameOver = game.add.sprite(
@@ -199,7 +200,7 @@ TheGame.prototype = {
             this.restartGame();
         }, this, 0, 0, 0);
         playBtn.anchor.setTo(0.5,0.5);
-        playBtn.scale.setTo(0.8);
+        //playBtn.scale.setTo(0.8);
         gameOverPopup.add(playBtn);
         var shareBtn = game.add.button(
             -playBtn.x,
@@ -224,6 +225,7 @@ TheGame.prototype = {
         gameOverPopup.y = game.height/2;
 
         this.scaleEntireOfGame();
+        game.world.bringToTop(this.theSquare);
 
     },
 
@@ -297,6 +299,53 @@ TheGame.prototype = {
 
     },
 
+    /**
+     * create background partical
+     */
+    createBackgroundPartical:function(shouldReCreateEmitter){
+        //return;
+        if(shouldReCreateEmitter) {
+            var back_emitter = game.add.emitter(game.world.centerX, -32, 600);
+            back_emitter.makeParticles('snowflakes', [0, 1, 2, 3, 4, 5]);
+            back_emitter.maxParticleScale = 0.3;
+            back_emitter.minParticleScale = 0.1;
+            back_emitter.setYSpeed(20, 100);
+            back_emitter.gravity = 0;
+            back_emitter.width = game.world.width * 1.5;
+            back_emitter.minRotation = 0;
+            back_emitter.maxRotation = 40;
+            this.back_emitter = back_emitter;
+
+            //var mid_emitter = game.add.emitter(game.world.centerX, -32, 250);
+            //mid_emitter.makeParticles('snowflakes', [0, 1, 2, 3, 4, 5]);
+            //mid_emitter.maxParticleScale = 0.4;
+            //mid_emitter.minParticleScale = 0.3;
+            //mid_emitter.setYSpeed(50, 150);
+            //mid_emitter.gravity = 0;
+            //mid_emitter.width = game.world.width * 1.5;
+            //mid_emitter.minRotation = 0;
+            //mid_emitter.maxRotation = 40;
+            //this.mid_emitter = mid_emitter;
+
+            var front_emitter = game.add.emitter(game.world.centerX, -32, 50);
+            front_emitter.makeParticles('snowflakes_large', [0, 1, 2, 3, 4, 5]);
+            front_emitter.maxParticleScale = 0.7;
+            front_emitter.minParticleScale = 0.3;
+            front_emitter.setYSpeed(100, 200);
+            front_emitter.gravity = 0;
+            front_emitter.width = game.world.width * 1.5;
+            front_emitter.minRotation = 0;
+            front_emitter.maxRotation = 40;
+            this.front_emitter = front_emitter;
+        }
+
+        //changeWindDirection();
+        //true, 1000,null,20
+        this.back_emitter.start(false, 5000,null, 5);
+        //this.mid_emitter.start(false, 2000,null, 5);
+        this.front_emitter.start(false, 3000,null, 5);
+    },
+
      // once the state is ready
      create: function(){
 
@@ -363,6 +412,26 @@ TheGame.prototype = {
               gameOptions.floorX + gameOptions.squareSize / 2 + 50,
               gameOptions.floorY[0] - gameOptions.squareSize / 2, "tile");
          this.groupNeed2Scale.push (this.theSquare);
+
+         var theWing = game.add.sprite(
+             0,
+             -10, "player_wing");
+         theWing.scale.setTo(1.3,1);
+         theWing.anchor.setTo(0.5,1);
+         theWing.visible = false;
+         theWing.blendMode = PIXI.blendModes.ADD;
+         this.theSquare.wing = theWing;
+         this.theSquare.addChild(theWing);
+
+         var theHalo = game.add.sprite(
+             0,
+             -20, "player_halo");
+         theHalo.scale.setTo(0.2);
+         theHalo.anchor.setTo(0.5,1);
+         theHalo.visible = false;
+         //theWing.blendMode = PIXI.blendModes.ADD;
+         this.theSquare.halo = theHalo;
+         this.theSquare.addChild(theHalo);
 
          // var leg = game.add.sprite(0, gameOptions.squareSize-2, 'moving_leg');
          // leg.tint = 0xffffff;
@@ -453,14 +522,29 @@ TheGame.prototype = {
           }
 
           // placing a partical emitter at coordinate 0,0 (we'll place it in its proper position later) which can fire up to 30 particles
-          this.emitter = game.add.emitter(0, 0, 30);
+          this.dieEmitter = game.add.emitter(0, 0, 30);
           // our particle is the same old "title" image
-          this.emitter.makeParticles("tile");
+          this.dieEmitter.makeParticles("tile");
           //setting a gravity for each particle
-          this.emitter.gravity = 200;
+          this.dieEmitter.gravity = 200;
           // particals would be too big, so let's set their min and max scale.
-          this.emitter.maxParticleScale = 0.1;
-          this.emitter.minParticleScale = 0.05;
+          this.dieEmitter.maxParticleScale = 0.1;
+          this.dieEmitter.minParticleScale = 0.05;
+
+         this.jumpEmitter = game.add.emitter(-100, -100, 5);
+
+         this.jumpEmitter.setXSpeed(-10, 100);
+         this.jumpEmitter.setYSpeed(0, 0);
+         //  Here we're passing an array of image keys. It will pick one at random when emitting a new particle.
+         this.jumpEmitter.makeParticles('jump_partical');
+         //this.jumpEmitter.makeParticles('smoke');
+         this.jumpEmitter.gravity = 200;
+         //this.jumpEmitter.start(false, 5000, 20);
+         this.jumpEmitter.maxParticleScale = 0.2;
+         this.jumpEmitter.minParticleScale = 0.05;
+         this.jumpEmitter.setAlpha(0.8, 0.3, 300);
+         this.jumpEmitter.start(false, 500,20,5);
+
 
          //finally placing the hero
          this.placeSquare();
@@ -469,6 +553,8 @@ TheGame.prototype = {
           game.input.onDown.add(this.squareJump, this);
 
 
+
+         this.createBackgroundPartical(true);
           this.createBtnControlMusic();
          this.scaleEntireOfGame();
      },
@@ -489,17 +575,26 @@ TheGame.prototype = {
             return;
         }
 
+        this.theSquare.wing.angle = 20;
+        //  Create our tween. This will fade the sprite to alpha 1 over the duration of 2 seconds
+        var wingTween = game.add.tween(this.theSquare.wing).to( { angle: -20 }, 500, "Linear", true, 0, -1);
+        //  And this tells it to yoyo, i.e. fade back to zero again before repeating.
+        //  The 3000 tells it to wait for 3 seconds before starting the fade back.
+        wingTween.yoyo(true, 0);
+        this.theSquare.wing.visible = true;
+        this.theSquare.halo.visible = true;
+
         this.playSound("explosion");
         // placing the emitter over the player
-        this.emitter.x = this.theSquare.x;
-        this.emitter.y = this.theSquare.y;
+        this.dieEmitter.x = this.theSquare.x;
+        this.dieEmitter.y = this.theSquare.y;
 
         // firing 10 particles at once with a 1000 milliseconds lifespan
-        this.emitter.start(true, 1000,null,20);
+        this.dieEmitter.start(true, 1000,null,20);
 
         var that = this;
         // tinting particles with the same player color
-        this.emitter.forEach(function(particle) {
+        this.dieEmitter.forEach(function(particle) {
             particle.tint = this.theSquare.tint;
         }, this);
 
@@ -509,7 +604,11 @@ TheGame.prototype = {
         this.theSquare.canJump = false;
         //in this case, restart the game
         //game.state.start("TheGame");
-        this.theSquare.visible = false;
+        //this.theSquare.visible = false;
+        //this.theSquare.alpha = 0.8;
+        this.theSquare.body.velocity.x /= 4;
+        this.theSquare.body.gravity.y = -gameOptions.squareGravity;
+
 
         this.createIfNotExistPopupGameOver();
     },
@@ -655,6 +754,19 @@ TheGame.prototype = {
           // if the hero can jump...
           if(this.theSquare.canJump){
 
+              if(this.score %4 == 0){
+                  this.createBackgroundPartical(false);
+              }
+              if(this.theSquare.body.velocity.x > 0){
+                  this.jumpEmitter.x = this.theSquare.x + 30;
+              }else if(this.theSquare.body.velocity.x < 0){
+                  this.jumpEmitter.x = this.theSquare.x - 30;
+              }else{
+                  this.jumpEmitter.x = this.theSquare.x;
+              }
+              this.jumpEmitter.y = this.theSquare.y-5;
+              //this.jumpEmitter.start(false, 5000, 20);
+              this.jumpEmitter.start(false, 500,20,5);
               this.playSound( 'jump');
 
                // preventing it to jump while in the air
@@ -864,6 +976,13 @@ TheLoadingGame.prototype = {
         game.load.image("play_bg_music", "assets/sprites/maingame/play_bg.png");
         game.load.image("mute_bg_music", "assets/sprites/maingame/mute_bg.png");
         game.load.image("hand_touch", "assets/sprites/hand-touch.png");
+        game.load.image("jump_partical", "assets/sprites/jump_partical.png");
+        game.load.image("player_wing", "assets/sprites/wing.png");
+        game.load.image("player_halo", "assets/sprites/halo.png");
+        game.load.spritesheet("snowflakes", "assets/sprites/snowflakes.png", 17, 17);
+        game.load.spritesheet("snowflakes_large", "assets/sprites/snowflakes_large.png", 64, 64);
+        //game.load.image("smoke", "assets/sprites/smoke-puff.png");
+
 
         game.load.bitmapFont('carrier_command', 'assets/fonts/bitmapFonts/carrier_command.png', 'assets/fonts/bitmapFonts/carrier_command.xml');
 
